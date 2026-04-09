@@ -76,7 +76,8 @@ consisting of the first 7 (8 if mult is supplied) values listed below.}
 \value{
 Depending on the value of `sw`:
 
-  For `sw` other than 2 or 3, a list with components:
+  For `sw` other than 2 or 3, an object of class `"locfdr"` (inheriting
+  from `"list"`) with components:
   \describe{
     \item{fdr}{the estimated local false discovery rate for each case,
       using the selected type and nulltype.}
@@ -89,6 +90,8 @@ Depending on the value of `sw`:
     \item{mat}{a matrix of estimates at the bin midpoints.}
     \item{z.2}{the interval where fdr < 0.2.}
     \item{call}{the function call.}
+    \item{nulltype}{the nulltype used.}
+    \item{N}{the number of cases.}
     \item{mult}{if the argument mult was supplied, vector of Efdr
       ratios for sample size multiples.}
   }

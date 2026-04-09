@@ -1,5 +1,5 @@
 Package: locfdr
-Version: 1.1-9
+Version: 2.0-0
 Title: Computes Local False Discovery Rates
 Authors@R: c(person("Bradley", "Efron", role=c("aut"),
 	   	   email = "brad@stat.Stanford.EDU"),
@@ -10,12 +10,16 @@ Authors@R: c(person("Bradley", "Efron", role=c("aut"),
 License: GPL-2
 Encoding: UTF-8
 Imports:
+    cli,
+    generics,
     graphics,
     splines,
     stats
 Suggests:
+    ggplot2,
     knitr,
     rmarkdown,
+    tibble,
     tinytest
 VignetteBuilder: knitr
 LazyData: true

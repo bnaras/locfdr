@@ -12,7 +12,9 @@ w <- locfdr(hivdata, plot = 0)
 
 ## Return structure
 expect_true(is.list(w))
-expect_equal(sort(names(w)), sort(c("fdr", "fp0", "Efdr", "cdf1", "mat", "z.2", "call")))
+## Must contain at least the classic elements (2.0-0 adds nulltype, N, class)
+classic_names <- c("fdr", "fp0", "Efdr", "cdf1", "mat", "z.2", "call")
+expect_true(all(classic_names %in% names(w)))
 expect_true(inherits(w$call, "call"))
 
 ## fdr vector

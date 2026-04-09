@@ -47,7 +47,8 @@
 #'
 #' @return Depending on the value of `sw`:
 #'
-#'   For `sw` other than 2 or 3, a list with components:
+#'   For `sw` other than 2 or 3, an object of class `"locfdr"` (inheriting
+#'   from `"list"`) with components:
 #'   \describe{
 #'     \item{fdr}{the estimated local false discovery rate for each case,
 #'       using the selected type and nulltype.}
@@ -60,6 +61,8 @@
 #'     \item{mat}{a matrix of estimates at the bin midpoints.}
 #'     \item{z.2}{the interval where fdr < 0.2.}
 #'     \item{call}{the function call.}
+#'     \item{nulltype}{the nulltype used.}
+#'     \item{N}{the number of cases.}
 #'     \item{mult}{if the argument mult was supplied, vector of Efdr
 #'       ratios for sample size multiples.}
 #'   }
@@ -86,6 +89,7 @@
 #' data(hivdata)
 #' w <- locfdr(hivdata)
 #'
+#' @importFrom cli cli_abort cli_warn
 #' @importFrom stats approx dnorm glm lm median pnorm poisson poly qnorm quantile
 #' @importFrom splines ns
 #' @importFrom graphics abline hist lines matplot par points text title
@@ -147,8 +151,8 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
 	D <- (y - f)/(f + 1)^0.5
 	D <- sum(D[2:(K - 1)]^2)/(K - 2 - df)
 	if(D > 1.5)
-          warning(paste("f(z) misfit = ", round(
-			D, 1), ".  Rerun with increased df", sep=""))
+          cli::cli_warn("f(z) misfit = {round(D, 1)}.
+                         Rerun with increased {.arg df}.")
         # ............. create fp0 matrix ..........................
         if (nulltype == 3) {
                 fp0 = matrix(NA, 6, 4)
@@ -197,13 +201,15 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
         }
         if (cmerror) {
           if (nulltype == 3)
-            stop("CM estimation failed.  Rerun with nulltype = 1 or 2.")
+            cli::cli_abort("CM estimation failed.
+                            Rerun with {.code nulltype = 1} or {.code nulltype = 2}.")
           else
             if (nulltype == 2)
-            stop("CM estimation failed.  Rerun with nulltype = 1.")
+            cli::cli_abort("CM estimation failed.
+                            Rerun with {.code nulltype = 1}.")
           else {
             X0 <- cbind(1, x - xmax, (x - xmax)^2)
-            warning("CM estimation failed, middle of histogram non-normal")
+            cli::cli_warn("CM estimation failed, middle of histogram non-normal.")
           }
         }
         else {
@@ -230,7 +236,9 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
           med = median(zz);sc=diff(quantile(zz)[c(2,4)])/(2*qnorm(.75))
           mlests = locmle(zz, xlim=c(med, b*sc))
           if (N>500000) {
-            warning("length(zz) > 500,000: For ML estimation, a wider interval than optimal was used.  To use the optimal interval, rerun with mlests = c(", mlests[1], ", ", b * mlests[2], ").\n", sep="")
+            cli::cli_warn("length(zz) > 500,000: For ML estimation, a wider interval
+                          than optimal was used. To use the optimal interval, rerun
+                          with {.code mlests = c({mlests[1]}, {b * mlests[2]})}.")
             mlests = locmle(zz, xlim=c(med, sc))
           }
         }
@@ -250,15 +258,19 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
         if (sum(is.na(fp0[c(3,5),1:2])) == 0 & nulltype > 1)
           if(abs(fp0["cmest",1] - mlests[1]) > 0.050000000000000003 |
              abs(log(fp0["cmest",2]/mlests[2])) > 0.050000000000000003)
-		warning("Discrepancy between central matching and maximum likelihood estimates.\nConsider rerunning with nulltype = 1")
+		cli::cli_warn("Discrepancy between central matching and maximum
+                          likelihood estimates. Consider rerunning with
+                          {.code nulltype = 1}.")
         ## Error messages for failed ML estimation ##
         if (is.na(mlests[1])) {
           if (nulltype == 1) {
             if (is.na(fp0["cmest", 1]))
-              stop("CM and ML Estimation failed, middle of histogram non-normal")
-            else stop("ML estimation failed.  Rerun with nulltype=2")
+              cli::cli_abort("CM and ML estimation failed, middle of
+                              histogram non-normal.")
+            else cli::cli_abort("ML estimation failed.
+                                 Rerun with {.code nulltype = 2}.")
           }
-          else warning("ML Estimation failed")
+          else cli::cli_warn("ML estimation failed.")
         }
 	if(nulltype < 2) {
 		delhat = xmax = xmaxx = mlests[1]
@@ -355,7 +367,7 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
                 if (nulltype==0) Ilfdr = Cov0.out$Ilfdr
                 else if (nulltype==1) Ilfdr = ml.out$Ilfdr
 		else if (nulltype==2) Ilfdr = Cov2.out$Ilfdr
-                else stop("With sw=3, nulltype must equal 0, 1, or 2.")
+                else cli::cli_abort("With {.code sw = 3}, {.arg nulltype} must equal 0, 1, or 2.")
 	        return(Ilfdr)
               }
         if (nulltype == 0) Cov = Cov0.out$Cov
@@ -382,7 +394,7 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
             stdev = fp0["cmeSD", c(3,1,2)]
             pds. = t(Cov2.out$pds.)
           }
-          else stop("With sw=2, nulltype must equal 0, 1, or 2.")
+          else cli::cli_abort("With {.code sw = 2}, {.arg nulltype} must equal 0, 1, or 2.")
           colnames(pds.) = names(pds) = c("p0", "delhat", "sighat")
           names(stdev) = c("sdp0", "sddelhat", "sdsighat")
 	  return(list(pds=pds, x=x, f=f, pds.=pds., stdev=stdev))
@@ -465,7 +477,7 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
 		}
 		if (plot == 3 | plot == 4) {
 			if(sum(is.na(cdf1[, 2])) == nrow(cdf1))
-				warning("cdf1 not available")
+				cli::cli_warn("cdf1 not available.")
 			else {
 				plot(cdf1[, 1], cdf1[, 2], type = "l",
 					lwd = 3, xlab = "fdr level", ylim
@@ -497,6 +509,9 @@ function(zz, bre = 120, df = 7, pct = 0, pct0 = 1/4, nulltype = 1, type = 0, plo
 	if(!missing(mult))
 		vl$mult = EE
         vl$call = call
+        vl$nulltype = nulltype
+        vl$N = N
+        class(vl) = c("locfdr", "list")
 	vl
 }
 
