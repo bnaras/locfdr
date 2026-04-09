@@ -1,0 +1,53 @@
+# locfdr
+
+Computation of Local False Discovery Rates
+
+## Installation
+
+``` r
+install.packages("locfdr")
+```
+
+## Overview
+
+locfdr computes local false discovery rates following the methodology of
+Efron (2004, 2007). Given a vector of z-scores from simultaneous
+hypothesis tests, it estimates the mixture density f(z), the null
+sub-density p₀f₀(z), and the local false discovery rate fdr(z) = p₀f₀(z)
+/ f(z).
+
+# Package index
+
+## All functions
+
+- [`augment(`*`<locfdr>`*`)`](https://bnaras.github.io/locfdr/reference/augment.locfdr.md)
+  : Augment a locfdr Object
+- [`autoplot.locfdr()`](https://bnaras.github.io/locfdr/reference/autoplot.locfdr.md)
+  : Plot a locfdr Object with ggplot2
+- [`glance(`*`<locfdr>`*`)`](https://bnaras.github.io/locfdr/reference/glance.locfdr.md)
+  : Glance at a locfdr Object
+- [`hivdata`](https://bnaras.github.io/locfdr/reference/hivdata.md) :
+  HIV Gene Expression Data
+- [`lfdrsim`](https://bnaras.github.io/locfdr/reference/lfdrsim.md) :
+  Simulated Data for locfdr
+- [`loccov()`](https://bnaras.github.io/locfdr/reference/loccov.md) :
+  Covariance Calculations for Local FDR
+- [`loccov2()`](https://bnaras.github.io/locfdr/reference/loccov2.md) :
+  Covariance Calculations for Central Matching Null
+- [`locfdr()`](https://bnaras.github.io/locfdr/reference/locfdr.md) :
+  Local False Discovery Rate Calculation
+- [`locmle()`](https://bnaras.github.io/locfdr/reference/locmle.md) :
+  Maximum Likelihood Estimation for Null Distribution Parameters
+- [`print(`*`<locfdr>`*`)`](https://bnaras.github.io/locfdr/reference/print.locfdr.md)
+  : Print a locfdr Object
+- [`summary(`*`<locfdr>`*`)`](https://bnaras.github.io/locfdr/reference/summary.locfdr.md)
+  : Summarize a locfdr Object
+- [`tidy(`*`<locfdr>`*`)`](https://bnaras.github.io/locfdr/reference/tidy.locfdr.md)
+  : Tidy a locfdr Object
+
+# Articles
+
+### All vignettes
+
+- [Local
+  FDR](https://bnaras.github.io/locfdr/articles/locfdr-example.md):
