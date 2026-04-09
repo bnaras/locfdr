@@ -3,3 +3,5 @@
 ^.*\.txt$
 ^LICENSE$
 ^\.github$
+^locfdr\.Rcheck$
+^.*\.tar\.gz$

@@ -1,9 +1,31 @@
-##
-## We need the splines library, so we load it.
-##
-
-#.onLoad <- function(lib, pkg) require(splines)
-
+#' Maximum Likelihood Estimation for Null Distribution Parameters
+#'
+#' Uses z-values in a specified interval to find maximum likelihood
+#' estimates for the null distribution parameters p0, delta0, and sigma0.
+#'
+#' @param z Vector of summary statistics (z-values).
+#' @param xlim Two-vector `c(center, half-width)` defining the interval
+#'   `[center - half-width, center + half-width]` used for estimation.
+#'   If missing, computed automatically from `z`.
+#' @param Jmle Number of iterations for the MLE algorithm.
+#' @param d Initial value for delta (null mean).
+#' @param s Initial value for sigma (null standard deviation).
+#' @param ep Convergence tolerance.
+#' @param sw If 1, returns correlation matrix along with MLE.
+#' @param Cov.in Optional list with components `x`, `X`, `f`, `sw` for
+#'   covariance and influence function calculations.
+#'
+#' @return If `sw` is not 1 and `Cov.in` is not supplied, a named vector
+#'   of length 6: `del0`, `sig0`, `p0`, `sd.del0`, `sd.sig0`, `sd.p0`.
+#'
+#'   If `sw=1`, a list with `mle` (the estimates) and `Cor` (correlation
+#'   matrix).
+#'
+#'   If `Cov.in` is supplied, a list with `mle` and either `Cov.lfdr`,
+#'   `pds.`, or `Ilfdr` depending on `Cov.in$sw`.
+#'
+#' @importFrom stats dnorm median pnorm qnorm quantile
+#' @export
 locmle <-
 function(z, xlim , Jmle = 35, d = 0, s = 1, ep = 1/100000, sw = 0, Cov.in)
 {
@@ -124,6 +146,32 @@ function(z, xlim , Jmle = 35, d = 0, s = 1, ep = 1/100000, sw = 0, Cov.in)
         else return(mle)
 }
 
+#' Covariance Calculations for Local FDR
+#'
+#' Computes influence functions and covariance matrices for local false
+#' discovery rate estimates under the MLE null.
+#'
+#' @param N Total number of cases.
+#' @param N0 Number of cases in the estimation interval.
+#' @param p0 Estimated proportion of null cases.
+#' @param d Estimated null mean (delta).
+#' @param s Estimated null standard deviation (sigma).
+#' @param x Vector of bin midpoints.
+#' @param X Design matrix for the density fit.
+#' @param f Fitted density values at bin midpoints.
+#' @param JV Jacobian-variance product from MLE.
+#' @param Y Two-vector of sufficient statistics from the MLE interval.
+#' @param i0 Indices of bins in the central matching region.
+#' @param H Vector of truncated normal moments.
+#' @param h Derivative terms from truncated normal.
+#' @param sw Switch: 2 returns parameter derivatives with respect to bin
+#'   counts; 3 returns influence function of log(fdr); otherwise returns
+#'   covariance matrix of log(fdr).
+#'
+#' @return Depends on `sw`: derivative matrix (sw=2), influence function
+#'   matrix (sw=3), or covariance matrix (otherwise).
+#'
+#' @export
 loccov = function(N, N0, p0, d, s, x, X, f, JV, Y, i0, H, h, sw) {
   M = rbind(1, x - Y[1], x^2 - Y[2])
   if (sw==2) {
@@ -156,6 +204,28 @@ loccov = function(N, N0, p0, d, s, x, X, f, JV, Y, i0, H, h, sw) {
   }
 }
 
+#' Covariance Calculations for Central Matching Null
+#'
+#' Computes covariance and influence functions for local false discovery
+#' rate estimates under the central matching or theoretical null.
+#'
+#' @param X Design matrix for the mixture density fit.
+#' @param X0 Design matrix for the null density fit.
+#' @param i0 Indices of bins in the central matching region.
+#' @param f Fitted mixture density values at bin midpoints.
+#' @param ests Three-vector of null parameter estimates
+#'   `c(delta, sigma, p0)`.
+#' @param N Total number of cases.
+#'
+#' @return A list with components:
+#'   \describe{
+#'     \item{Ilfdr}{Influence function matrix for log(fdr).}
+#'     \item{pds.}{Parameter derivative matrix (3 x K).}
+#'     \item{stdev}{Standard deviations of parameter estimates.}
+#'     \item{Cov}{Covariance matrix of log(fdr) estimates.}
+#'   }
+#'
+#' @export
 loccov2 = function(X, X0, i0, f, ests, N) {
         d = ests[1]
         s = ests[2]
